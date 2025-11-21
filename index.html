@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Eurocode 3 Member Check</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="card">
+      <h1>Eurocode 3 Member Buckling Calculator</h1>
+      <p class="small">
+        Axial compression + biaxial bending + shear according to EN 1993-1-1.  
+        Member buckling checks about y-y and z-z with Eurocode interaction equations (6.61, 6.62).  
+      </p>
+    </header>
+
+    <section class="card">
+      <h2>1. Inputs</h2>
+      <div class="grid">
+        <div>
+          <div class="field">
+            <label for="section-select">Section</label>
+            <select id="section-select"></select>
+          </div>
+          <div class="field">
+            <label for="steel-grade">Steel grade (yield strength fy)</label>
+            <select id="steel-grade">
+              <option value="S235">S235 (nominal fy = 235 MPa)</option>
+              <option value="S275">S275 (nominal fy = 275 MPa)</option>
+              <option value="S355" selected>S355 (nominal fy = 355 MPa)</option>
+            </select>
+            <div class="inline-note" id="fy-note">
+              Select a section to see thickness-dependent fy reductions.
+            </div>
+          </div>
+          <div class="field">
+            <label for="buckling-curve-y">Buckling curve for y-y (major axis)</label>
+            <select id="buckling-curve-y">
+              <option value="a0">Curve a0 (α = 0.13)</option>
+              <option value="a">Curve a (α = 0.21)</option>
+              <option value="b" selected>Curve b (α = 0.34)</option>
+              <option value="c">Curve c (α = 0.49)</option>
+              <option value="d">Curve d (α = 0.76)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="buckling-curve-z">Buckling curve for z-z (minor axis)</label>
+            <select id="buckling-curve-z">
+              <option value="a0">Curve a0 (α = 0.13)</option>
+              <option value="a">Curve a (α = 0.21)</option>
+              <option value="b" selected>Curve b (α = 0.34)</option>
+              <option value="c">Curve c (α = 0.49)</option>
+              <option value="d">Curve d (α = 0.76)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <div class="field">
+            <label for="length-y">Effective length L<sub>cr,y</sub> (m, flexural buckling y-y and LTB)</label>
+            <input type="number" id="length-y" value="3.0" step="0.1" min="0" />
+          </div>
+          <div class="field">
+            <label for="length-z">Effective length L<sub>cr,z</sub> (m, flexural buckling z-z)</label>
+            <input type="number" id="length-z" value="3.0" step="0.1" min="0" />
+          </div>
+          <div class="field">
+            <label>Partial factors</label>
+            <div class="inline-note">
+              γ<sub>M0</sub> = 1.0, γ<sub>M1</sub> = 1.0 (fixed in this tool, typical UK NA values).
+            </div>
+          </div>
+          <div class="field">
+            <label>Other assumptions</label>
+            <div class="inline-note">
+              E = 210 000 MPa, LTB only for major-axis bending using same effective length as y-y compression,  
+              Class 4 sections not supported (effective widths are not implemented here).
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size:0.95rem;margin-top:1rem;">Actions (design values)</h3>
+      <div class="grid">
+        <div>
+          <div class="field">
+            <label for="ned">Axial force N<sub>Ed</sub> (kN, compression &gt; 0)</label>
+            <input type="number" id="ned" value="0" step="10" />
+          </div>
+          <div class="field">
+            <label for="myed">Major-axis bending moment M<sub>y,Ed</sub> (kNm)</label>
+            <input type="number" id="myed" value="0" step="1" />
+          </div>
+          <div class="field">
+            <label for="mzed">Minor-axis bending moment M<sub>z,Ed</sub> (kNm)</label>
+            <input type="number" id="mzed" value="0" step="1" />
+          </div>
+        </div>
+        <div>
+          <div class="field">
+            <label for="vzed">Major-axis shear force V<sub>z,Ed</sub> (kN)</label>
+            <input type="number" id="vzed" value="0" step="1" />
+            <div class="inline-note">Typically associated with bending about y-y / major axis (web shear).</div>
+          </div>
+          <div class="field">
+            <label for="vyed">Minor-axis shear force V<sub>y,Ed</sub> (kN)</label>
+            <input type="number" id="vyed" value="0" step="1" />
+            <div class="inline-note">Typically associated with bending about z-z / minor axis.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions-row">
+        <button id="calc-btn">Calculate</button>
+        <div class="governing-chip" id="governing-chip">Governing η: &mdash;</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>2. Section diagram & properties</h2>
+      <div class="grid">
+        <div id="section-diagram-container">
+          <svg id="section-diagram" width="220" height="220"></svg>
+          <div class="diagram-caption">
+            Stylised UC/UB I-section. Dimensions approximately to scale based on h, b, t<sub>w</sub>, t<sub>f</sub>.
+          </div>
+        </div>
+        <div>
+          <table id="section-table">
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>3. Calculation steps & utilization</h2>
+      <div id="results">
+        Sections are loaded from <code>sections.json</code>. Click “Calculate” to show detailed Eurocode 3 checks here.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Notes</h2>
+      <ul class="small">
+        <li>Section classification is based on simplified EC3 slenderness limits for doubly-symmetric I sections in bending:  
+          flange outstand c/t and web depth d/t<sub>w</sub> are checked. Governing class = max(flange class, web class).</li>
+        <li>Class 1/2: plastic behaviour using W<sub>pl</sub>.  
+            Class 3: elastic behaviour using W<sub>el</sub>.  
+            Class 4: effective widths not implemented – the tool will ask you to choose a more compact section.</li>
+        <li>Member buckling checks use Eurocode interaction equations (6.61, 6.62) with simplified interaction factors for doubly symmetric I sections.</li>
+      </ul>
+    </section>
+  </div>
+
+  <script src="app.js" defer></script>
+
+</body>
+</html>

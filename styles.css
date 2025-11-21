@@ -1,0 +1,212 @@
+:root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.4;
+      color: #111827;
+      background: #f3f4f6;
+    }
+    body {
+      margin: 0;
+      padding: 1.5rem;
+      background: radial-gradient(circle at top left, #e5e7eb, #f9fafb);
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+    }
+    h2 {
+      font-size: 1.1rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .page {
+      max-width: 1150px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 1rem;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+      padding: 1.2rem 1.4rem;
+      margin-bottom: 1rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.2rem;
+    }
+    select, input[type="number"] {
+      width: 100%;
+      padding: 0.4rem 0.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+      box-sizing: border-box;
+    }
+    input[type="number"]:focus,
+    select:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 1px #6366f1;
+    }
+    .field {
+      margin-bottom: 0.7rem;
+    }
+    .inline-note {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 0.55rem 1.4rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg, #4f46e5, #3b82f6);
+      color: white;
+      box-shadow: 0 10px 20px rgba(59,130,246,0.35);
+      transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 26px rgba(59,130,246,0.45);
+    }
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 8px 16px rgba(59,130,246,0.3);
+    }
+
+    .actions-row {
+      margin-top: 0.7rem;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+    }
+    .governing-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.4rem 0.9rem;
+      border-radius: 0.75rem;
+      background: #e0e7ff;
+      color: #312e81;
+      font-weight: 600;
+      font-size: 0.85rem;
+      min-height: 2.25rem;
+      min-width: 220px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 0.35rem 0.4rem;
+      text-align: right;
+      white-space: nowrap;
+    }
+    th {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+    td.label {
+      text-align: left;
+      font-weight: 500;
+      color: #374151;
+    }
+
+    #section-diagram-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    #section-diagram {
+      border-radius: 0.75rem;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+    }
+    .diagram-caption {
+      font-size: 0.75rem;
+      color: #6b7280;
+      text-align: center;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #4338ca;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+
+    #results {
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+      background: #0b1120;
+      color: #e5e7eb;
+      border-radius: 0.75rem;
+      padding: 0.8rem 0.9rem;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    .utilization-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-left: 0.25rem;
+    }
+    .util-ok {
+      background: rgba(34,197,94,0.14);
+      color: #22c55e;
+    }
+    .util-high {
+      background: rgba(249,115,22,0.15);
+      color: #f97316;
+    }
+    .util-ng {
+      background: rgba(239,68,68,0.15);
+      color: #ef4444;
+    }
+
+    .shear-flag {
+      display: inline-block;
+      padding: 0.1rem 0.4rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      margin-left: 0.3rem;
+    }
+    .shear-normal {
+      background: rgba(59,130,246,0.1);
+      color: #60a5fa;
+    }
+    .shear-high {
+      background: rgba(234,179,8,0.12);
+      color: #eab308;
+    }
+    .shear-fail {
+      background: rgba(239,68,68,0.12);
+      color: #ef4444;
+    }
+
+    .small {
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
