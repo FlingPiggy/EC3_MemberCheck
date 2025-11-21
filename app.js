@@ -10,8 +10,11 @@ let SECTIONS = {};   // will be filled from sections.json
     };
 
     const E = 210000; // MPa = N/mm²
+    const POISSON = 0.3;
+    const G = 81000; // MPa
     const gammaM0 = 1.0;
     const gammaM1 = 1.0;
+    const C1_LTB = 1.0; // given assumption for moment gradient factor
 
     const STEEL_GRADE_DATA = {
       S235: {
@@ -601,15 +604,49 @@ let SECTIONS = {};   // will be filled from sections.json
       steps += "  χ_z = 1 / [φ_z + √(φ_z² - λ̄_z²)] = " + chiZ.toFixed(3) + "\n";
       steps += "  N_b,z,Rd = χ_z·A·fy / γ_M1 = " + (NbZ_Rd / 1000).toFixed(1) + " kN\n";
 
-      // ---- 6) LTB for major-axis bending ----
+      // ---- 6) LTB for major-axis bending (EN 1993-1-1, 6.3.2.2 / Eq. 6.56) ----
       steps += "\n--- 6) Lateral-torsional buckling (LTB) for major-axis bending ---\n";
-      const chiLT = chiY;  // simplified
+      const ltCurveAlpha = sec.h / sec.b > 2 ? BUCKLING_CURVES.b : BUCKLING_CURVES.a;
+      const Lb = LcrZ_mm; // use Minor-axis effective length as unbraced length
+      const kz = 1.0;
+
+      // Section torsion / warping properties (thin-wall approximation, fillet ignored)
+      const It = 2 * (sec.b * Math.pow(sec.tf, 3) / 3) + ((sec.h - 2 * sec.tf) * Math.pow(sec.tw, 3) / 3);
+      const dWarp = sec.h - sec.tf; // distance between flange centroids ~ h - t_f
+      const Iw = (sec.Iz * Math.pow(dWarp, 2)) / 4;
+
+      const kzL = kz * Lb;
+      
+      const pref = (Math.PI * Math.PI * E * sec.Iz) / (kzL * kzL);
+      const inside = (kzL * kzL * G * It) / (Math.PI * Math.PI * E * sec.Iz) +
+                     (Iw / sec.Iz);
+      const Mcr = pref * Math.sqrt(Math.max(inside, 0));
+
+      if (!(Mcr > 0)) {
+        steps += "LTB: Unable to compute M_cr (check dimensions / lengths).\n";
+        resultsDiv.textContent = steps;
+        setGoverningChipMessage("LTB Mcr not computable.");
+        return;
+      }
+
+      const MyRk_for_LT = Wy_eff * fy; // characteristic moment about major axis
+      const lambdaBarLT = Math.sqrt(MyRk_for_LT / Mcr);
+      const phiLT = 0.5 * (1 + ltCurveAlpha * (lambdaBarLT - 0.2) + lambdaBarLT * lambdaBarLT);
+      let chiLT = 1 / (phiLT + Math.sqrt(Math.max(phiLT * phiLT - lambdaBarLT * lambdaBarLT, 0)));
+      chiLT = Math.min(chiLT, 1.0);
       const Myb_Rd = chiLT * MyRd;
       const Mzcb_Rd = MzRd;
 
-      steps += "Assume λ̄_LT ≈ λ̄_y → χ_LT ≈ χ_y = " + chiLT.toFixed(3) + "\n";
-      steps += "M_y,b,Rd = χ_LT·M_y,Rd = " + (Myb_Rd / 1e6).toFixed(1) + " kNm\n";
-      steps += "M_z,cb,Rd (no LTB) = M_z,Rd = " + (Mzcb_Rd / 1e6).toFixed(1) + " kNm\n";
+      steps += "Assumptions: C1 = 1.0, kz = 1.0, L_b = L_cr,z.\n";
+      steps += "  Torsion constant I_t ≈ 2·(b·t_f³/3) + (h-2t_f)·t_w³/3 = " + formatSci(It) + " mm⁴\n";
+      steps += "  Warping constant I_ω ≈ I_z·(h - t_f)² / 4 = " + formatSci(Iw) + " mm⁶\n";
+      steps += "  Buckling curve for LTB: " + (sec.h / sec.b > 2 ? "curve b (α = 0.34)" : "curve a (α = 0.21)") + "\n";
+      steps += "  M_cr = " + formatSci(Mcr) + " Nmm\n";
+      steps += "  λ̄_LT = sqrt(M_y,Rk / M_cr) = " + lambdaBarLT.toFixed(3) + "\n";
+      steps += "  φ_LT = 0.5·[1 + α_LT(λ̄_LT - 0.2) + λ̄_LT²] = " + phiLT.toFixed(3) + "\n";
+      steps += "  χ_LT = 1 / [φ_LT + sqrt(φ_LT² - λ̄_LT²)] = " + chiLT.toFixed(3) + "\n";
+      steps += "  M_y,b,Rd = χ_LT·M_y,Rd = " + (Myb_Rd / 1e6).toFixed(1) + " kNm\n";
+      steps += "  M_z,cb,Rd (no LTB) = M_z,Rd = " + (Mzcb_Rd / 1e6).toFixed(1) + " kNm\n";
 
       // ---- 7) Member interaction checks (EC3 6.61, 6.62 form) ----
       steps += "\n--- 7) Member interaction checks (EN 1993-1-1, 6.3.3 – Eqs. 6.61 & 6.62) ---\n";
